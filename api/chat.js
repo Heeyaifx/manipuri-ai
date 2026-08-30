@@ -12,11 +12,10 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'GEMINI_API_KEY is missing in Vercel Environment Variables.' });
   }
 
-  if (!history || !Array.isArray(history)) {
-    return res.status(400).json({ error: 'Invalid or missing conversation history array.' });
+  if (!history || !Array.isArray(history) || history.length === 0) {
+    return res.status(400).json({ error: 'Valid conversation history is required.' });
   }
 
-  // MASTER SYSTEM INSTRUCTION: Sets persona, Meiteilon fluency, culture & academic disciplines
   const systemInstruction = `
 You are the official AI Support Operator for Saiyonba Sorokhaibam based in Yairipok, Manipur.
 
@@ -36,33 +35,58 @@ CORE CAPABILITIES & BEHAVIOR:
 5. Formatting: Keep responses concise, well-structured, scannable, and clean.
 `;
 
-  try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    
-    // Uses the latest stable model alias
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      systemInstruction: systemInstruction,
-    });
+  // List of models to try in order of speed and capability
+  const candidateModels = [
+    "gemini-1.5-flash-latest",
+    "gemini-1.5-flash",
+    "gemini-2.0-flash",
+    "gemini-1.5-pro-latest",
+    "gemini-1.5-pro",
+    "gemini-pro"
+  ];
 
-    // Format conversation history for SDK
-    const formattedHistory = history.map(item => ({
-      role: item.role === 'model' ? 'model' : 'user',
-      parts: item.parts.map(p => ({ text: p.text }))
-    }));
+  const genAI = new GoogleGenerativeAI(apiKey);
 
-    const result = await model.generateContent({
-      contents: formattedHistory,
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 800,
+  // Extract the latest user message and preceding history
+  const lastUserMsg = history[history.length - 1]?.parts?.[0]?.text || "";
+  const pastHistory = history.slice(0, -1).map(item => ({
+    role: item.role === 'model' ? 'model' : 'user',
+    parts: item.parts.map(p => ({ text: p.text }))
+  }));
+
+  let lastError = null;
+
+  // Try each model until one works
+  for (const modelName of candidateModels) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        systemInstruction: systemInstruction,
+      });
+
+      const chat = model.startChat({
+        history: pastHistory,
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 800,
+        }
+      });
+
+      const result = await chat.sendMessage(lastUserMsg);
+      const reply = result.response.text();
+
+      if (reply) {
+        return res.status(200).json({ reply });
       }
-    });
-
-    const reply = result.response.text();
-    return res.status(200).json({ reply });
-  } catch (err) {
-    console.error("Gemini Error:", err);
-    return res.status(500).json({ error: err.message || 'Internal server error' });
+    } catch (err) {
+      console.warn(`Model ${modelName} failed:`, err.message);
+      lastError = err;
+      // Continue to next model in loop
+    }
   }
+
+  // If all candidate models failed
+  return res.status(500).json({ 
+    error: `AI connection failed. Details: ${lastError?.message || 'Unknown error'}` 
+  });
 }
