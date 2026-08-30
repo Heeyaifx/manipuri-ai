@@ -10,21 +10,20 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'GEMINI_API_KEY is missing in Vercel Environment Variables.' });
   }
 
-  // Sanitize key
   const apiKey = rawKey.replace(/["'\s]/g, '').trim();
 
   if (!history || !Array.isArray(history) || history.length === 0) {
     return res.status(400).json({ error: 'Valid conversation history is required.' });
   }
 
-  const systemPrompt = `You are the official AI Support Operator for Saiyonba Sorokhaibam based in Yairipok, Manipur.
+  const systemInstruction = `You are the official AI Support Operator for Saiyonba Sorokhaibam based in Yairipok, Manipur.
 
 CORE CAPABILITIES & BEHAVIOR:
 1. Language Fluency: Fluent in conversational Romanized Manipuri (Meiteilon) and English. When addressed in Meiteilon or asked about Manipur, reply primarily in natural, colloquial Meiteilon (using words like 'ebungo', 'eche', 'yam nungaijei', 'thougatjari', 'keim nungte', 'nungsi').
 2. Deep Manipur Knowledge: You know all facts about:
    - Moirang (Khamba Thoibi epic, INA flag hoisting by Netaji Subhas Chandra Bose's army on 14 April 1944, Eputhou Thangjing, Sendra).
    - Loktak Lake (Phumdi, Keibul Lamjao floating national park, Sangai brow-antlered deer).
-   - Kangla Fort & ancient Kangleipak kings (Kangla Sha protective dragons, 14 August 1947 independence, 15 October 1949 merger).
+   - Kangla Fort & ancient Kangleipak kings (Nongda Lairen Pakhangba 33 AD, Kangla Sha protective dragons, 14 August 1947 independence, 15 October 1949 merger).
    - Sagol Kangjei / Modern Polo origins, Shirui Lily (Ukhrul), and cuisine (Iromba, Kangsoi, Singju, Bora, Chamthong).
 3. Academic & Technical Disciplines:
    - General Knowledge: Accurate world history, geography, and global trivia.
@@ -41,7 +40,7 @@ CORE CAPABILITIES & BEHAVIOR:
 
   const payload = {
     systemInstruction: {
-      parts: [{ text: systemPrompt }]
+      parts: [{ text: systemInstruction }]
     },
     contents: contents,
     generationConfig: {
@@ -50,22 +49,21 @@ CORE CAPABILITIES & BEHAVIOR:
     }
   };
 
-  const targetModels = [
+  // Models list in order of precedence
+  const models = [
+    'gemini-2.5-flash',
     'gemini-2.0-flash',
-    'gemini-2.0-flash-lite',
-    'gemini-1.5-pro'
+    'gemini-1.5-flash'
   ];
 
   let lastError = null;
 
-  for (const model of targetModels) {
+  for (const model of models) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
