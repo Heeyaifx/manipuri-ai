@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAIRIPOK AI NODE // LIVE MANIPURI SUPPORT</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Plus+Jakarta+Sans:wght@800;900&family=Space+Grotesk:wght@600;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #f5efe6;
+      --black: #0c0d12;
+      --yellow: #ffe600;
+      --pink: #ff1b6b;
+      --cyan: #00f0ff;
+      --lime: #00ff75;
+      --paper: #ffffff;
+      --border: 4px solid var(--black);
+      --shadow: 8px 8px 0px var(--black);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(var(--black) 15%, transparent 16%),
+        radial-gradient(var(--black) 15%, transparent 16%);
+      background-size: 28px 28px;
+      background-position: 0 0, 14px 14px;
+      color: var(--black);
+      font-family: 'Space Grotesk', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem 1.2rem;
+      overflow-x: hidden;
+    }
+
+    .hazard-ribbon {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      background: var(--black);
+      color: var(--yellow);
+      font-family: 'Fira Code', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 6px 0;
+      z-index: 1000;
+      overflow: hidden;
+      white-space: nowrap;
+      border-bottom: 3px solid var(--black);
+    }
+
+    .ribbon-track {
+      display: inline-block;
+      animation: ribbonRun 18s linear infinite;
+    }
+
+    @keyframes ribbonRun {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .chat-wrapper {
+      width: 100%;
+      max-width: 860px;
+      margin-top: 1.2rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    .sticker-float-top {
+      position: absolute;
+      top: -18px;
+      right: -10px;
+      background: var(--pink);
+      color: #fff;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.75rem;
+      font-weight: 900;
+      padding: 4px 12px;
+      border: 3px solid var(--black);
+      box-shadow: 4px 4px 0px var(--black);
+      transform: rotate(5deg);
+      z-index: 20;
+    }
+
+    .sticker-float-left {
+      position: absolute;
+      bottom: -16px;
+      left: -12px;
+      background: var(--lime);
+      color: var(--black);
+      font-family: 'Fira Code', monospace;
+      font-size: 0.72rem;
+      font-weight: 900;
+      padding: 4px 10px;
+      border: 3px solid var(--black);
+      box-shadow: 4px 4px 0px var(--black);
+      transform: rotate(-4deg);
+      z-index: 20;
+    }
+
+    .chat-frame {
+      background: var(--paper);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      height: 720px;
+      position: relative;
+      background-image: linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px);
+      background-size: 32px 100%;
+    }
+
+    .chat-header {
+      background: var(--yellow);
+      border-bottom: 4px solid var(--black);
+      padding: 1rem 1.4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .operator-info { display: flex; align-items: center; gap: 12px; }
+
+    .operator-avatar {
+      width: 46px;
+      height: 46px;
+      background: var(--cyan);
+      border: 3px solid var(--black);
+      box-shadow: 2px 2px 0px var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.3rem;
+    }
+
+    .operator-text h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+    }
+
+    .operator-status {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #007a38;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 2px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #00ff75;
+      border: 1.5px solid var(--black);
+      border-radius: 50%;
+      animation: pulseBlink 1.4s infinite;
+    }
+
+    @keyframes pulseBlink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .header-actions { display: flex; gap: 8px; }
+
+    .btn-action-small {
+      background: #ffffff;
+      border: 2px solid var(--black);
+      box-shadow: 2px 2px 0px var(--black);
+      padding: 4px 10px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-action-small:hover { background: var(--pink); color: #fff; }
+
+    .chat-messages {
+      flex: 1;
+      padding: 1.4rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      background: #faf8f5;
+    }
+
+    .msg-group {
+      display: flex;
+      flex-direction: column;
+      max-width: 88%;
+      animation: bubblePop 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes bubblePop {
+      from { transform: scale(0.9) translateY(8px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .msg-group.operator { align-self: flex-start; }
+    .msg-group.user { align-self: flex-end; }
+
+    .msg-sender {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #666;
+      margin-bottom: 3px;
+    }
+
+    .msg-group.user .msg-sender { text-align: right; }
+
+    .msg-bubble {
+      padding: 0.9rem 1.2rem;
+      border: 3px solid var(--black);
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.5;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .msg-group.operator .msg-bubble { background: #ffffff; box-shadow: 4px 4px 0px var(--black); }
+    .msg-group.user .msg-bubble { background: var(--yellow); box-shadow: -4px 4px 0px var(--black); }
+
+    .msg-time {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #888;
+      margin-top: 3px;
+    }
+
+    .msg-group.user .msg-time { text-align: right; }
+
+    .typing-indicator {
+      display: none;
+      align-self: flex-start;
+      background: #ffffff;
+      border: 2.5px solid var(--black);
+      box-shadow: 3px 3px 0px var(--black);
+      padding: 0.6rem 1rem;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .typing-indicator.active { display: flex; }
+
+    .type-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--black);
+      border-radius: 50%;
+      animation: typeBounce 1.2s infinite ease-in-out;
+    }
+
+    .type-dot:nth-child(2) { animation-delay: 0.2s; }
+    .type-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typeBounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-6px); background: var(--pink); }
+    }
+
+    .chips-tray {
+      background: #fff;
+      border-top: 3px solid var(--black);
+      padding: 0.6rem 1rem;
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .chips-tray::-webkit-scrollbar { display: none; }
+
+    .chip-btn {
+      background: #f4f4f4;
+      border: 2px solid var(--black);
+      box-shadow: 2px 2px 0px var(--black);
+      padding: 0.4rem 0.75rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.1s ease;
+    }
+
+    .chip-btn:hover { background: var(--cyan); transform: translate(-1px, -1px); box-shadow: 3px 3px 0px var(--black); }
+    .chip-btn:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px var(--black); }
+
+    .chat-input-bar {
+      background: var(--paper);
+      border-top: 4px solid var(--black);
+      padding: 0.8rem 1rem;
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: #fafafa;
+      border: 3px solid var(--black);
+      box-shadow: 3px 3px 0px var(--black);
+      padding: 0.8rem 1.1rem;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--black);
+      outline: none;
+    }
+
+    .chat-input:focus { background: #ffffff; transform: translate(-1px, -1px); box-shadow: 4px 4px 0px var(--black); }
+
+    .btn-send {
+      background: var(--pink);
+      color: #ffffff;
+      border: 3px solid var(--black);
+      box-shadow: 4px 4px 0px var(--black);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      padding: 0.8rem 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.1s ease;
+    }
+
+    .btn-send:hover { background: #ff0055; transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--black); }
+    .btn-send:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px var(--black); }
+
+    #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 5000; }
+  </style>
+</head>
+<body>
+
+  <div class="hazard-ribbon">
+    <div class="ribbon-track">
+      <span>⚡ LIVE MEITEILON AI NODE // ASK ABOUT MOIRANG • GK • SCIENCE • ENGLISH • TECH // YAIRIPOK HQ ⚡&nbsp;</span>
+      <span>⚡ LIVE MEITEILON AI NODE // ASK ABOUT MOIRANG • GK • SCIENCE • ENGLISH • TECH // YAIRIPOK HQ ⚡&nbsp;</span>
+    </div>
+  </div>
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <main class="chat-wrapper">
+    <div class="sticker-float-top">AI POWERED ⚡</div>
+    <div class="sticker-float-left">YAIRIPOK NODE 📍</div>
+
+    <div class="chat-frame">
+      <header class="chat-header">
+        <div class="operator-info">
+          <div class="operator-avatar">⚡</div>
+          <div class="operator-text">
+            <h3>SAIYONBA // MEITEILON AI</h3>
+            <div class="operator-status">
+              <span class="status-dot"></span>
+              <span>LIVE AI CONNECTED</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="btn-action-small" id="btnClearChat">CLEAR</button>
+          <button class="btn-action-small" id="btnAudioToggle">🔊 SFX</button>
+        </div>
+      </header>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg-group operator">
+          <span class="msg-sender">SAIYONBA // AI NODE</span>
+          <div class="msg-bubble">Khurumjari! 🙏 Eina nangonda Moirang, GK, Science, English idioms, nattraga Coding/Forex gi maramda karamba help toubige? Kari khangningbage haibiyu!</div>
+          <span class="msg-time" id="initTime">09:00 AM</span>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+          <span style="font-family:'Fira Code', monospace; font-size:0.7rem; font-weight:700; margin-right:4px;">AI THINKING</span>
+          <div class="type-dot"></div>
+          <div class="type-dot"></div>
+          <div class="type-dot"></div>
+        </div>
+      </div>
+
+      <div class="chips-tray">
+        <button class="chip-btn" onclick="sendChip('Moirang gi maram da khara hairak o')">🏰 Moirang Details</button>
+        <button class="chip-btn" onclick="sendChip('Manipur da karamba matamda ning tamkhi?')">📜 Manipur Independence</button>
+        <button class="chip-btn" onclick="sendChip('i love you')">❤️ i love you</button>
+        <button class="chip-btn" onclick="sendChip('Explain Gravity in Manipuri')">🍎 Gravity in Manipuri</button>
+        <button class="chip-btn" onclick="sendChip('English idioms with Manipuri meaning')">📖 English Idioms</button>
+        <button class="chip-btn" onclick="sendChip('Chak chaba loirabo?')">🍚 Chak Chaba?</button>
+      </div>
+
+      <form class="chat-input-bar" id="chatForm" onsubmit="return false;">
+        <input 
+          type="text" 
+          class="chat-input" 
+          id="msgInput" 
+          placeholder="Ask anything in English or Manipuri..." 
+          autocomplete="off" 
+          required 
+        />
+        <button type="submit" class="btn-send" id="btnSend">
+          <span>ASK</span>
+          <span>⚡</span>
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // 1. Audio engine
+    let audioOn = true;
+    let audioCtx = null;
+    function getAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+    function playSfx(type) {
+      if (!audioOn) return;
+      try {
+        const ctx = getAudio();
+        const now = ctx.currentTime;
+        if (type === 'send') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } else if (type === 'receive') {
+          [660, 990].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + i * 0.05);
+            gain.gain.setValueAtTime(0.18, now + i * 0.05);
+            gain.gain.linearRampToValueAtTime(0.01, now + i * 0.05 + 0.08);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.05);
+            osc.stop(now + i * 0.05 + 0.08);
+          });
+        } else if (type === 'love') {
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + i * 0.07);
+            gain.gain.setValueAtTime(0.16, now + i * 0.07);
+            gain.gain.linearRampToValueAtTime(0.01, now + (i + 1) * 0.07 + 0.2);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.07);
+            osc.stop(now + (i + 1) * 0.07 + 0.2);
+          });
+        }
+      } catch (e) {}
+    }
+
+    document.getElementById('btnAudioToggle').onclick = () => {
+      audioOn = !audioOn;
+      document.getElementById('btnAudioToggle').textContent = audioOn ? '🔊 SFX' : '🔇 MUTE';
+    };
+
+    function getFormattedTime() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    document.getElementById('initTime').textContent = getFormattedTime();
+
+    // 2. Chat state with multi-turn memory
+    const chatMessages = document.getElementById('chatMessages');
+    const chatForm = document.getElementById('chatForm');
+    const msgInput = document.getElementById('msgInput');
+    const typingIndicator = document.getElementById('typingIndicator');
+    let conversationHistory = [];
+
+    function appendMessage(sender, text, isUser = false) {
+      const group = document.createElement('div');
+      group.className = `msg-group ${isUser ? 'user' : 'operator'}`;
+      group.innerHTML = `
+        <span class="msg-sender">${sender}</span>
+        <div class="msg-bubble">${text}</div>
+        <span class="msg-time">${getFormattedTime()}</span>
+      `;
+      chatMessages.insertBefore(group, typingIndicator);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function handleSend(text) {
+      const msg = text || msgInput.value.trim();
+      if (!msg) return;
+
+      // Append to UI and history
+      appendMessage('YOU // OPERATOR', msg, true);
+      conversationHistory.push({
+        role: 'user',
+        parts: [{ text: msg }]
+      });
+
+      playSfx('send');
+      msgInput.value = '';
+
+      typingIndicator.classList.add('active');
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ history: conversationHistory })
+        });
+
+        const data = await response.json();
+        const reply = data.reply || data.error || "Response phangdre ebungo.";
+
+        conversationHistory.push({
+          role: 'model',
+          parts: [{ text: reply }]
+        });
+
+        typingIndicator.classList.remove('active');
+        appendMessage('SAIYONBA // MANIPURI AI', reply, false);
+
+        if (/nungsijei|love you|heart/i.test(reply)) {
+          playSfx('love');
+          createConfetti(window.innerWidth / 2, window.innerHeight / 2, 45, true);
+        } else {
+          playSfx('receive');
+        }
+      } catch (err) {
+        typingIndicator.classList.remove('active');
+        appendMessage('SAIYONBA // MANIPURI AI', 'Network connection error! Please make sure your project is deployed to Vercel with your GEMINI_API_KEY.', false);
+      }
+    }
+
+    chatForm.onsubmit = (e) => { e.preventDefault(); handleSend(); };
+    window.sendChip = (text) => handleSend(text);
+    document.getElementById('btnClearChat').onclick = () => {
+      chatMessages.querySelectorAll('.msg-group').forEach(m => m.remove());
+      conversationHistory = [];
+      appendMessage('SAIYONBA // MANIPURI AI', 'Chat session reset. Khurumjari! Ask any question in GK, Science, English, or Tech!', false);
+    };
+
+    // 3. Confetti Engine
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    window.onresize = () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; };
+
+    let particles = [];
+    const colors = ['#ffe600', '#00f0ff', '#ff1b6b', '#00ff75', '#8338ec', '#0c0d12'];
+    function createConfetti(x, y, count = 35, isHeart = false) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 12 + 4;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 4,
+          size: Math.random() * 8 + 6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rot: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 20,
+          alpha: 1,
+          isHeart
+        });
+      }
+    }
+    function renderConfetti() {
+      ctx.clearRect(0, 0, width, height);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx; p.y += p.vy; p.vy += 0.45; p.rot += p.vRot; p.alpha -= 0.02;
+        if (p.alpha <= 0) { particles.splice(i, 1); continue; }
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rot * Math.PI) / 180);
+        ctx.globalAlpha = p.alpha;
+        if (p.isHeart) {
+          ctx.font = `${p.size * 1.6}px sans-serif`;
+          ctx.fillText('❤️', -p.size / 2, p.size / 2);
+        } else {
+          ctx.fillStyle = p.color; ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.strokeRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        }
+        ctx.restore();
+      }
+      requestAnimationFrame(renderConfetti);
+    }
+    renderConfetti();
+  </script>
+</body>
+</html>
